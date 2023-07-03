@@ -18,8 +18,23 @@ const server = http.createServer((req, res) => {
     return res.end();
   }
   if( url === '/message' && method === 'POST'){
-    fs.writeFileSync('message.txt', 'DUMMY'); //새로운 파일을 만들어 유저가 보낸 메세지 저장
-    //res.writeHead(302, {} );
+    //req.on을통해 특정 이벤트를 들을 수 잇다.
+
+    const body = []//request body
+    //데이터 받기 by 이벤트 리스너
+    //새 청크가 읽힐때마다 데이터 이벤트가 발생(각 request에 data가 존재함!)할 때에 처리
+    //두번째 인자로 이벤트가 발생핼을 때 실행될 함수를 정의
+    req.on('data', (chunk)=>{
+      body.push(chunk);
+    });
+    //end는 들어오는 요청데이터 혹은 전반적인 요청을 분석한 후에 발생.
+    req.on('end', () => {
+      const parsedBody = Buffer.concat(body).toString();
+      console.log(parsedBody);
+      const message = parsedBody.split('=')[1];
+      //파일에 쓰기
+      fs.writeFileSync('message.txt', message); 
+    });
     res.statusCode = 302;
     res.setHeader('Location', '/');
     return res.end();
